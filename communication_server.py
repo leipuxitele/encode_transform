@@ -7,9 +7,13 @@ import RSA
 
 with open("server_file\\key.json", "r") as f:
     CA_key = json.load(f)
-IP = "127.0.0.1"
-PORT = 9999  # 端口
-users = {'admin': '123456', 'alice': 'alice123456', 'bob': 'bob123456'}
+
+with open('setting.json', 'r') as f2:
+    users = json.load(f2)
+
+IP = users['IP']
+PORT = users['port']
+
 ADDRESS = {}  # 存储用户地址
 Flag = 1  # 用于标记用户
 
@@ -107,10 +111,14 @@ def message_forwarding(user, conn: socket.socket, Flag):
         lock: 锁
         """
         while True:
-            mes = conn.recv(2048)
-            lock.acquire()
-            message.put(mes)
-            lock.release()
+            try:
+                mes = conn.recv(2048)
+                lock.acquire()
+                message.put(mes)
+                lock.release()
+            except BaseException:
+                print(f"Connection from {user} has been interrupted")
+                exit(0)
 
     def send(conn: socket.socket, message: queue.Queue, lock: threading.Lock):
         """
