@@ -1,5 +1,8 @@
 import json
+from random import seed
 import threading
+
+from RC4 import RC4
 from AES_ECB import AES_ECB
 import RSA
 import file_transfer
@@ -7,9 +10,9 @@ import socket
 
 IP = "127.0.0.1"
 PORT = 9998
-with open("server_file\\key.json", 'r') as f:
+with open("server_file\\key.json", "r") as f:
     p = json.load(f)
-server_dk = p['private_key']
+server_dk = p["private_key"]
 file_save_path = "server_file\\"
 file_conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 file_conn.bind((IP, PORT))
@@ -22,10 +25,14 @@ def file_server():
 
     # get key
     data = f_conn.recv(2048).decode()
-    aes_data = RSA.decrypt(data, server_dk)
-    aes_key = eval(aes_data.decode())
-    aes = AES_ECB(128, aes_key)
-    T = file_transfer.file_transfer(f_conn, f_addr, aes=aes)
+    key_data = RSA.decrypt(data, server_dk)
+    print(key_data)
+    key = json.loads(key_data.decode())
+    aes_key = key["aes_key"]
+    rc4_seed = key["rc4_key"]
+    aes = AES_ECB(128, eval(aes_key))
+    rc4 = RC4(rc4_seed.encode())
+    T = file_transfer.file_transfer(f_conn, f_addr, aes=aes, rc4=rc4)
     while True:
         cmd = f_conn.recv(1024).decode()
         if cmd == "get":

@@ -1,0 +1,9 @@
+{
+  "digits_aes":128,
+  "digits_rsa": 128,
+  "IP":"127.0.0.1",
+  "port":9999,
+  "admin": "123456",
+  "wy": "wy",
+  "dz": "dz"
+}
